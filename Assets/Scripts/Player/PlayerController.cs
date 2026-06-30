@@ -61,6 +61,11 @@ public class PlayerController : MonoBehaviour
     {
         ApplyGravity();
         StateMachine.Update();
+
+        if (input.MoveInput.magnitude < 0.1f)
+        {
+            UpdateAnimation(0);
+        }
     }
 
     // Move player based on camera direction and input
@@ -90,9 +95,7 @@ public class PlayerController : MonoBehaviour
 
         // Apply movement to character controller
         controller.Move(moveDirection.normalized * speed * Time.deltaTime);
-
-        // Update animator speed parameter based on movement magnitude
-        animator.SetFloat("Speed", moveDirection.magnitude);
+        UpdateAnimation(speed);
     }
 
     // Apply gravity to the player
@@ -108,5 +111,17 @@ public class PlayerController : MonoBehaviour
         verticalVelocity += gravity * Time.deltaTime;
         // Move the player vertically based on vertical velocity
         controller.Move(Vector3.up * verticalVelocity * Time.deltaTime);
+    }
+
+    void UpdateAnimation(float speed)
+    {
+        float normalizedSpeed = speed / sprintSpeed;
+
+        animator.SetFloat(
+            "MoveSpeed",
+            normalizedSpeed,
+            0.25f,
+            Time.deltaTime
+        );
     }
 }

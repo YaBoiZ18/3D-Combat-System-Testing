@@ -23,7 +23,6 @@ public class IdleState : PlayerState
     // Override the Enter method to set the player's animation speed to 0 when entering the IdleState
     public override void Enter()
     {
-        player.Animator.SetFloat("Speed", 0);
-        player.Animator.SetBool("IsSprinting", false);
+        
     }
 }

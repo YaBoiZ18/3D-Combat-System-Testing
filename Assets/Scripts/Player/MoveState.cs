@@ -29,13 +29,11 @@ public class MoveState : PlayerState
         // Move the player based on the input
         player.Move(player.walkSpeed);
 
-        player.Animator.SetFloat("Speed", 1);
-
     }
 
     // Override the Enter method to set the player's animation speed to 1 when entering the MoveState
     public override void Enter()
     {
-        player.Animator.SetBool("IsSprinting", false);
+        
     }
 }

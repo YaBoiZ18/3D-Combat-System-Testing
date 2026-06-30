@@ -27,14 +27,11 @@ public class SprintState : PlayerState
 
         // Move the player based on the input
         player.Move(player.sprintSpeed);
-
-        // Set the player's animation speed to 1 when sprinting
-        player.Animator.SetFloat("Speed", 1);
     }
 
     // Override the Enter method to set the player's animation speed to 1 when entering the SprintState
     public override void Enter()
     {
-        player.Animator.SetBool("IsSprinting", true);
+        
     }
 }
