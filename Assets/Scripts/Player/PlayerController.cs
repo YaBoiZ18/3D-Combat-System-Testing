@@ -28,8 +28,8 @@ public class PlayerController : MonoBehaviour
     public InputReader Input => input;
     public Animator Animator => animator;
 
-    // Camera reference for direction calculation
-    Camera mainCamera;
+    [SerializeField] // Reference to the camera transform for movement direction
+    private Transform cameraRoot;
 
     // Animator reference for handling animations
     Animator animator;
@@ -40,7 +40,6 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         input = GetComponent<InputReader>();
         StateMachine = new PlayerStateMachine();
-        mainCamera = Camera.main;
 
         animator = GetComponentInChildren<Animator>();
 
@@ -72,8 +71,8 @@ public class PlayerController : MonoBehaviour
     public void Move(float speed)
     {
         // Get camera directions and remove vertical component
-        Vector3 forward = mainCamera.transform.forward;
-        Vector3 right = mainCamera.transform.right;
+        Vector3 forward = cameraRoot.forward;
+        Vector3 right = cameraRoot.right;
 
         forward.y = 0;
         right.y = 0;

@@ -5,6 +5,8 @@ public class InputReader : MonoBehaviour
     public Vector2 MoveInput { get; private set; }
     public bool SprintHeld { get; private set; }
 
+    public Vector2 LookInput { get; private set; }
+
     // Update is called once per frame
     void Update()
     {
@@ -12,6 +14,11 @@ public class InputReader : MonoBehaviour
         MoveInput = new Vector2(
             Input.GetAxisRaw("Horizontal"), 
             Input.GetAxisRaw("Vertical")
+            );
+
+        LookInput = new Vector2(
+             Input.GetAxisRaw("Mouse X"),
+             Input.GetAxisRaw("Mouse Y")
             );
 
         // Check if the sprint key is held down
