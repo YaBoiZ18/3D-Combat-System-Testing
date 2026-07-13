@@ -4,6 +4,7 @@ public class InputReader : MonoBehaviour
 {
     public Vector2 MoveInput { get; private set; }
     public bool SprintHeld { get; private set; }
+    public bool LockPressed { get; private set; }
 
     public Vector2 LookInput { get; private set; }
 
@@ -23,5 +24,8 @@ public class InputReader : MonoBehaviour
 
         // Check if the sprint key is held down
         SprintHeld = Input.GetKey(KeyCode.LeftShift);
+
+        // Check if the lock key is pressed
+        LockPressed = Input.GetMouseButtonDown(2);
     }
 }
