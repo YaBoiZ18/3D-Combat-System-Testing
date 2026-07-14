@@ -8,6 +8,9 @@ public class InputReader : MonoBehaviour
 
     public Vector2 LookInput { get; private set; }
 
+    public bool CombatHeld { get; private set; }
+    public bool AttackPressed { get; private set; }
+
     // Update is called once per frame
     void Update()
     {
@@ -27,5 +30,11 @@ public class InputReader : MonoBehaviour
 
         // Check if the lock key is pressed
         LockPressed = Input.GetMouseButtonDown(2);
+
+        // Check if the combat key is held down
+        CombatHeld = Input.GetMouseButton(1);
+        
+        // Check if the attack key is pressed
+        AttackPressed = Input.GetMouseButtonDown(0);
     }
 }

@@ -24,6 +24,7 @@ public class PlayerController : MonoBehaviour
     public IdleState IdleState;
     public MoveState MoveState;
     public SprintState SprintState;
+    public CombatState CombatState;
 
     // State machine and public accessors
     public PlayerStateMachine StateMachine { get; private set; }
@@ -60,6 +61,7 @@ public class PlayerController : MonoBehaviour
         IdleState = new IdleState(this);
         MoveState = new MoveState(this);
         SprintState = new SprintState(this);
+        CombatState = new CombatState(this);
     }
 
     // Initialize state machine with idle state
