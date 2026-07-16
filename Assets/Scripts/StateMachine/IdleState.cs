@@ -10,8 +10,8 @@ public class IdleState : PlayerState
     // Override the Update method to check for movement input and transition to MoveState if necessary
     public override void Update()
     {
-        // Check if the player is holding the combat input, if so, change to CombatState
-        if (player.Input.CombatHeld)
+        // Check if the player is in combat. If so, change to CombatState
+        if (player.InCombat)
         {
             player.StateMachine.ChangeState(player.CombatState);
             return;

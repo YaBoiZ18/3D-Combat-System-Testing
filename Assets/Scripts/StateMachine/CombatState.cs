@@ -9,23 +9,19 @@ public class CombatState : PlayerState
 
     public override void Enter()
     {
-        player.Animator.SetBool("InCombat", true);
+        // Combat animation already handled
+        // by FinishDrawingSword()
     }
 
     public override void Exit()
     {
-        player.Animator.SetBool("InCombat", false);
+        // Sheathing handled by PlayerController
     }
 
     public override void Update()
     {
-        // Check if the player is still holding the combat input. If not, transition back to IdleState.
-        if (!player.Input.CombatHeld)
-        {
-            player.StateMachine.ChangeState(player.IdleState);
-
+        if (!player.InCombat)
             return;
-        }
 
         // Check if the player is moving. If so, call the Move method with the player's walk speed.
         if (player.Input.MoveInput.magnitude > 0.1f)

@@ -35,6 +35,9 @@ public class PlayerController : MonoBehaviour
 
     private float previousCameraYaw;
 
+    public bool InCombat { get; private set; }
+    public bool IsChangingCombatState { get; private set; }
+
     [SerializeField] // Reference to the camera transform for movement direction
     private Transform cameraRoot;
 
@@ -74,13 +77,19 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         ApplyGravity();
+
+        if (input.CombatPressed)
+        {
+            ToggleCombat();
+        }
+
         StateMachine.Update();
+
         RotateTowardsTarget();
 
         if (input.MoveInput.magnitude < 0.1f)
         {
             UpdateAnimator(0);
-            UpdateTurnAnimation();
         }
     }
 
@@ -193,19 +202,81 @@ public class PlayerController : MonoBehaviour
         );
     }
 
-    // Update the turn animation based on the change in camera yaw
-    private void UpdateTurnAnimation()
+    // Combat state management methods to enter, exit, and toggle combat mode
+    public void EnterCombat()
     {
-        // Calculate the change in camera yaw since the last frame
-        float turnAmount = Mathf.DeltaAngle(previousCameraYaw, transform.eulerAngles.y);
+        if (InCombat || IsChangingCombatState)
+            return;
 
-        // Update the animator's "Turn" parameter with the calculated turn amount
-        animator.SetFloat(
-            "Turn",
-            turnAmount
-        );
+        IsChangingCombatState = true;
 
-        // Update the previous camera yaw for the next frame
-        previousCameraYaw = transform.eulerAngles.y;
+        animator.SetTrigger("DrawSword");
     }
+
+    // Exit combat mode and update the animator
+    public void ExitCombat()
+    {
+        if (!InCombat || IsChangingCombatState)
+            return;
+
+        IsChangingCombatState = true;
+
+        animator.SetTrigger("SheathSword");
+    }
+
+    // Toggle combat mode based on the current state
+    public void ToggleCombat()
+    {
+        if (IsChangingCombatState)
+            return;
+
+        if (InCombat)
+            ExitCombat();
+        else
+            EnterCombat();
+    }
+
+    // Finish drawing the sword and enter combat state
+    public void FinishDrawingSword()
+    {
+        animator.ResetTrigger("DrawSword");
+
+        InCombat = true;
+        IsChangingCombatState = false;
+
+        animator.SetBool("InCombat", true);
+
+        StateMachine.ChangeState(CombatState);
+    }
+
+    // Finish sheathing the sword and return to idle state
+    public void FinishSheathingSword()
+    {
+        animator.ResetTrigger("SheathSword");
+
+        InCombat = false;
+        IsChangingCombatState = false;
+
+        animator.SetBool("InCombat", false);
+
+        StateMachine.ChangeState(IdleState);
+    }
+
+    //// Update the turn animation based on the change in camera yaw
+    //private void UpdateTurnAnimation()
+    //{
+    //    // Calculate the change in camera yaw since the last frame
+    //    float turnAmount = Mathf.DeltaAngle(previousCameraYaw, transform.eulerAngles.y);
+
+    //    // Update the animator's "Turn" parameter with the calculated turn amount
+    //    animator.SetFloat(
+    //        "Turn",
+    //        turnAmount
+    //    );
+
+    //    // Update the previous camera yaw for the next frame
+    //    previousCameraYaw = transform.eulerAngles.y;
+    //}
+
+
 }

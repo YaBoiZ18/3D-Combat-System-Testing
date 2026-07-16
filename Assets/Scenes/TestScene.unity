@@ -182,7 +182,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 88cc9b9a857fe3a40b196f13e264ac2e, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1901821142}
   m_SourcePrefab: {fileID: 100100000, guid: 88cc9b9a857fe3a40b196f13e264ac2e, type: 3}
 --- !u!4 &281526406 stripped
 Transform:
@@ -497,6 +500,7 @@ GameObject:
   - component: {fileID: 1403367316}
   - component: {fileID: 1403367317}
   - component: {fileID: 1403367318}
+  - component: {fileID: 1403367319}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -609,6 +613,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LockOnController
   input: {fileID: 1403367316}
   lockRadius: 15
+--- !u!114 &1403367319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1403367312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24798550c108f45478630def5943219a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CombatController
+  animator: {fileID: 1901821141}
+  input: {fileID: 1403367316}
 --- !u!1 &1452678341
 GameObject:
   m_ObjectHideFlags: 0
@@ -1044,6 +1062,28 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1901821140 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 88cc9b9a857fe3a40b196f13e264ac2e, type: 3}
+  m_PrefabInstance: {fileID: 281526405}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1901821141 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 88cc9b9a857fe3a40b196f13e264ac2e, type: 3}
+  m_PrefabInstance: {fileID: 281526405}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1901821142
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901821140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 479e9ef627dbe4f439898b017654fa9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimationEventReceiver
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
