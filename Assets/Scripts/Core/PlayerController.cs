@@ -41,6 +41,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] // Reference to the camera transform for movement direction
     private Transform cameraRoot;
 
+    [SerializeField]
+    private CombatController combatController;
+
+    public CombatController CombatController => combatController;
+
     // Animator reference for handling animations
     Animator animator;
     // Animator parameter hashes
