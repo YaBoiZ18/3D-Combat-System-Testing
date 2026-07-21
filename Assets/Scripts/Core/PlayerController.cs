@@ -44,7 +44,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private CombatController combatController;
 
+    [SerializeField]
+    private DodgeController dodgeController;
+
     public CombatController CombatController => combatController;
+
+    public DodgeController DodgeController => dodgeController;
 
     // Animator reference for handling animations
     Animator animator;

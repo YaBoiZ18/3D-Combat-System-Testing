@@ -37,6 +37,9 @@ public class CombatController : MonoBehaviour
     // This method is called when the player presses the attack button
     public void LightAttack()
     {
+        if (player.DodgeController.IsDodging)
+            return;
+
         // First attack
         if (!isAttacking)
         {
@@ -79,6 +82,7 @@ public class CombatController : MonoBehaviour
         canCombo = false;
         comboStep = 0;
 
+        animator.ResetTrigger(AttackHash);
         animator.SetInteger("ComboStep", 0);
     }
 }

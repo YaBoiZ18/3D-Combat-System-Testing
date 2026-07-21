@@ -11,6 +11,8 @@ public class InputReader : MonoBehaviour
     public bool CombatPressed { get; private set; }
     public bool AttackPressed { get; private set; }
 
+    public bool DodgePressed { get; private set; }
+
     // Update is called once per frame
     void Update()
     {
@@ -36,5 +38,8 @@ public class InputReader : MonoBehaviour
 
         // Check if the attack key is pressed
         AttackPressed = Input.GetMouseButtonDown(0);
+
+        // Check if the dodge key is pressed
+        DodgePressed = Input.GetKeyDown(KeyCode.Space);
     }
 }
