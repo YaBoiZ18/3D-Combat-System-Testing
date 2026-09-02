@@ -15,7 +15,8 @@ public class LockOnController : MonoBehaviour
     public bool IsLockedOn => currentTarget != null;
 
     // Public access to the current target's transform (null if none)
-    public Transform CurrentTarget => currentTarget ? currentTarget.transform : null;
+    public Transform CurrentTarget =>
+    currentTarget ? currentTarget.LockPoint : null;
 
     // Update is called once per frame
     private void Update()

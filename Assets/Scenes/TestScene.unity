@@ -563,7 +563,7 @@ Transform:
   m_GameObject: {fileID: 645358713}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 1.34, z: -1.63}
+  m_LocalPosition: {x: -0.1, y: 0.531, z: -1.63}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -823,7 +823,7 @@ Transform:
   m_GameObject: {fileID: 1403367312}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 2.48, y: 1, z: 1.128}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -967,6 +967,7 @@ MonoBehaviour:
   player: {fileID: 1403367314}
   input: {fileID: 1403367316}
   dodgeSpeed: 8
+  dodgeDuration: 0.5
 --- !u!1 &1452678341
 GameObject:
   m_ObjectHideFlags: 0
@@ -1086,7 +1087,7 @@ Transform:
   m_GameObject: {fileID: 1452862472}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.8, y: 1.6700001, z: -3}
+  m_LocalPosition: {x: 3.28, y: 1.6700001, z: -1.872}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1283,7 +1284,7 @@ Transform:
   m_GameObject: {fileID: 1656724838}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.1150403, y: 2.57909, z: -0.8827901}
+  m_LocalPosition: {x: 7.5950403, y: 2.57909, z: 0.24520993}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

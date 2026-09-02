@@ -51,6 +51,8 @@ public class PlayerController : MonoBehaviour
 
     public DodgeController DodgeController => dodgeController;
 
+    public LockOnController LockOn => lockOn;
+
     // Animator reference for handling animations
     Animator animator;
     // Animator parameter hashes
@@ -93,9 +95,8 @@ public class PlayerController : MonoBehaviour
             ToggleCombat();
         }
 
-        StateMachine.Update();
-
         RotateTowardsTarget();
+        StateMachine.Update();
 
         if (input.MoveInput.magnitude < 0.1f)
         {
@@ -106,29 +107,97 @@ public class PlayerController : MonoBehaviour
     // Move player based on camera direction and input
     public void Move(float speed)
     {
-        // Get camera directions and remove vertical component
+        Vector3 moveDirection;
+        Vector3 preMoveOffset = Vector3.zero;
+        bool orbiting = lockOn.IsLockedOn && lockOn.CurrentTarget != null;
+
+        if (orbiting)
+        {
+            preMoveOffset = transform.position - lockOn.CurrentTarget.position;
+            preMoveOffset.y = 0f;
+        }
+
+        moveDirection = orbiting ? CombatMovement() : ExplorationMovement();
+        MoveDirection = moveDirection;
+
+        if (moveDirection.sqrMagnitude > 0.01f)
+        {
+            controller.Move(moveDirection.normalized * speed * Time.deltaTime);
+
+            // Only correct outward drift when strafing — skip it when the player
+            // is deliberately changing distance to the target.
+            if (orbiting && Mathf.Approximately(input.MoveInput.y, 0f))
+            {
+                Vector3 offset = transform.position - lockOn.CurrentTarget.position;
+                offset.y = 0f;
+                if (offset.sqrMagnitude > 0.0001f)
+                {
+                    Vector3 corrected = offset.normalized * preMoveOffset.magnitude;
+                    controller.Move(corrected - offset);
+                }
+            }
+        }
+
+        UpdateAnimator(speed);
+    }
+
+    // Calculate movement direction based on camera orientation and input when not locked on
+    private Vector3 ExplorationMovement()
+    {
+        // Get the forward and right vectors of the camera, ignoring the vertical component
         Vector3 forward = cameraRoot.forward;
         Vector3 right = cameraRoot.right;
 
+        // Set the y component to 0 to ensure movement is horizontal
         forward.y = 0;
         right.y = 0;
 
-        // Normalize directional vectors
+        // Normalize the forward and right vectors to ensure consistent movement speed
         forward.Normalize();
         right.Normalize();
 
-        // Calculate movement direction from input
-        Vector2 moveInput = input.MoveInput;
-        MoveDirection = forward * moveInput.y + right * moveInput.x;
+        Vector2 inputMove = input.MoveInput;
 
-        if (!lockOn.IsLockedOn)
+        // Calculate the movement direction based on input and camera orientation
+        Vector3 direction =
+            forward * inputMove.y +
+            right * inputMove.x;
+
+        // Rotate the player towards the movement direction if there is significant input
+        if (direction.sqrMagnitude > 0.01f)
         {
-            RotateTowardsMovement(MoveDirection);
+            RotateTowardsMovement(direction);
         }
 
-        // Apply movement to character controller
-        controller.Move(MoveDirection.normalized * speed * Time.deltaTime);
-        UpdateAnimator(speed);
+        return direction;
+    }
+
+    // Calculate movement direction based on player orientation and input when locked on
+    private Vector3 CombatMovement()
+    {
+        if (!lockOn.IsLockedOn || lockOn.CurrentTarget == null)
+            return Vector3.zero;
+
+        // Direction from the player toward the target
+        Vector3 toTarget =
+            lockOn.CurrentTarget.position - transform.position;
+
+        toTarget.y = 0f;
+
+        if (toTarget.sqrMagnitude < 0.001f)
+            return Vector3.zero;
+
+        toTarget.Normalize();
+
+        // Tangent direction around the target
+        Vector3 right = Vector3.Cross(Vector3.up, toTarget);
+
+        // Y input = forward/back (toward/away from target), X input = strafe around target
+        Vector3 direction =
+            toTarget * input.MoveInput.y +
+            right * input.MoveInput.x;
+
+        return direction;
     }
 
     // Apply gravity to the player
@@ -159,17 +228,33 @@ public class PlayerController : MonoBehaviour
     // Rotate the player towards the current lock-on target if locked on
     void RotateTowardsTarget()
     {
-        if (!lockOn.IsLockedOn) { return; }
+        if (!lockOn.IsLockedOn || lockOn.CurrentTarget == null)
+            return;
 
-        Vector3 direction = lockOn.CurrentTarget.position - transform.position;
+        Vector3 direction =
+            lockOn.CurrentTarget.position - transform.position;
 
-        direction.y = 0f; // Ignore vertical difference for rotation
+        direction.y = 0f;
 
-        if (direction.sqrMagnitude < 0.01f) { return; } // Avoid rotating if the target is too close
+        if (direction.sqrMagnitude < 0.01f)
+            return;
 
-        Quaternion targetRotation = Quaternion.LookRotation(direction);
+        Quaternion targetRotation =
+            Quaternion.LookRotation(direction);
 
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * 360f * Time.deltaTime);
+        transform.rotation = targetRotation;
+
+        Debug.DrawRay(
+            transform.position,
+            transform.forward * 2f,
+            Color.blue
+        );
+
+        Debug.DrawRay(
+            transform.position,
+            transform.right * 2f,
+            Color.red
+        );
     }
 
     // Update the animator parameters based on the current speed and input
@@ -240,6 +325,9 @@ public class PlayerController : MonoBehaviour
         if (IsChangingCombatState)
             return;
 
+        if (DodgeController.IsDodging)
+            return;
+
         if (InCombat)
             ExitCombat();
         else
@@ -271,22 +359,4 @@ public class PlayerController : MonoBehaviour
 
         StateMachine.ChangeState(IdleState);
     }
-
-    //// Update the turn animation based on the change in camera yaw
-    //private void UpdateTurnAnimation()
-    //{
-    //    // Calculate the change in camera yaw since the last frame
-    //    float turnAmount = Mathf.DeltaAngle(previousCameraYaw, transform.eulerAngles.y);
-
-    //    // Update the animator's "Turn" parameter with the calculated turn amount
-    //    animator.SetFloat(
-    //        "Turn",
-    //        turnAmount
-    //    );
-
-    //    // Update the previous camera yaw for the next frame
-    //    previousCameraYaw = transform.eulerAngles.y;
-    //}
-
-
 }

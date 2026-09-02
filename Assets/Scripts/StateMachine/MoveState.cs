@@ -9,6 +9,10 @@ public class MoveState : PlayerState
 
     public override void Update()
     {
+        // Check if the player is in combat. If so, change to CombatState
+        if (player.DodgeController.IsDodging)
+            return;
+
         // Get the player's movement input
         Vector2 move = player.Input.MoveInput;
 

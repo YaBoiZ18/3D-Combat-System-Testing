@@ -23,7 +23,7 @@ public class CombatState : PlayerState
         if (!player.InCombat)
             return;
 
-        if (player.GetComponent<DodgeController>().IsDodging)
+        if (player.DodgeController.IsDodging)
             return;
 
         // Check if the player is moving. If so, call the Move method with the player's walk speed.
