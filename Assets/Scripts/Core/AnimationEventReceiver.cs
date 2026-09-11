@@ -6,6 +6,7 @@ public class AnimationEventReceiver : MonoBehaviour
     private WeaponController weapons;
     private CombatController combat;
     private DodgeController dodge;
+    [SerializeField] private WeaponHitbox weaponHitbox;
 
     private void Awake()
     {
@@ -44,12 +45,10 @@ public class AnimationEventReceiver : MonoBehaviour
         combat.EnableCombo();
     }
 
-
     public void DisableCombo()
     {
         combat.DisableCombo();
     }
-
 
     public void EndAttack()
     {
@@ -61,5 +60,15 @@ public class AnimationEventReceiver : MonoBehaviour
         Debug.Log("Animation Event: End Dodge");
 
         dodge.EndDodge();
+    }
+
+    public void EnableHitbox()
+    {
+        weaponHitbox.EnableHitbox();
+    }
+
+    public void DisableHitbox()
+    {
+        weaponHitbox.DisableHitbox();
     }
 }

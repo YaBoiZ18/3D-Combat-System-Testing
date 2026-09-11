@@ -114,50 +114,6 @@ public class DodgeController : MonoBehaviour
         }
     }
 
-    // Calculate the dodge direction based on player input and orientation
-    private void CalculateDodgeDirection()
-    {
-        Vector2 inputMove = input.MoveInput;
-
-
-        if (inputMove.sqrMagnitude < 0.1f)
-        {
-            dodgeDirection = player.transform.forward;
-            return;
-        }
-
-
-        Vector3 forward;
-        Vector3 right;
-
-
-        if (player.LockOn.IsLockedOn)
-        {
-            Vector3 targetDirection =
-                player.LockOn.CurrentTarget.position -
-                player.transform.position;
-
-            targetDirection.y = 0f;
-            targetDirection.Normalize();
-
-
-            forward = targetDirection;
-            right = Vector3.Cross(Vector3.up, forward);
-        }
-        else
-        {
-            forward = player.transform.forward;
-            right = player.transform.right;
-        }
-
-
-        dodgeDirection =
-            forward * inputMove.y +
-            right * inputMove.x;
-
-
-        dodgeDirection.Normalize();
-    }
 
     public void EndDodge()
     {
