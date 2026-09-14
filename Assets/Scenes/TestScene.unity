@@ -859,6 +859,10 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 18fbdebadd9be5641a1b0f1888408b86, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 7f40b9559f87d334f8ab7985960ca540, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 18fbdebadd9be5641a1b0f1888408b86, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
@@ -974,7 +978,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72eaf71f4fc7883488706086c8056b59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  maxHealth: 100
+  maxHealth: 30
+  animator: {fileID: 708761187}
+--- !u!95 &708761187 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 18fbdebadd9be5641a1b0f1888408b86, type: 3}
+  m_PrefabInstance: {fileID: 708761179}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &766792210 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100002, guid: 274849738f501054daf0e2f81919773f, type: 3}
@@ -1228,7 +1238,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CombatController
   animator: {fileID: 1901821141}
   input: {fileID: 1403367316}
+  weaponHitbox: {fileID: 1627437331}
   player: {fileID: 1403367314}
+  lightAttack1Damage: 10
+  lightAttack2Damage: 12
+  lightAttack3Damage: 15
 --- !u!114 &1403367320
 MonoBehaviour:
   m_ObjectHideFlags: 0

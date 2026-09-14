@@ -5,8 +5,13 @@ public class CombatController : MonoBehaviour
     [Header("References")]
     [SerializeField] private Animator animator;
     [SerializeField] private InputReader input;
-
+    [SerializeField] private WeaponHitbox weaponHitbox;
     [SerializeField] private PlayerController player;
+
+    [Header("Light Attack Damage")]
+    [SerializeField] private float lightAttack1Damage = 10f;
+    [SerializeField] private float lightAttack2Damage = 12f;
+    [SerializeField] private float lightAttack3Damage = 15f;
 
     // Flag to indicate if the player is currently attacking
     private bool isAttacking;
@@ -49,6 +54,8 @@ public class CombatController : MonoBehaviour
             animator.SetInteger("ComboStep", comboStep);
             animator.SetTrigger(AttackHash);
 
+            SetCurrentAttackDamage();
+
             return;
         }
 
@@ -60,6 +67,8 @@ public class CombatController : MonoBehaviour
 
             animator.SetInteger("ComboStep", comboStep);
             animator.SetTrigger(AttackHash);
+
+            SetCurrentAttackDamage();
 
             canCombo = false;
         }
@@ -84,5 +93,24 @@ public class CombatController : MonoBehaviour
 
         animator.ResetTrigger(AttackHash);
         animator.SetInteger("ComboStep", 0);
+    }
+
+    // This method sets the damage of the weapon hitbox based on the current combo step
+    private void SetCurrentAttackDamage()
+    {
+        switch (comboStep)
+        {
+            case 1:
+                weaponHitbox.SetDamage(lightAttack1Damage);
+                break;
+            case 2:
+                weaponHitbox.SetDamage(lightAttack2Damage);
+                break;
+            case 3:
+                weaponHitbox.SetDamage(lightAttack3Damage);
+                break;
+        }
+
+        Debug.Log($"Combo Step {comboStep} damage set.");
     }
 }

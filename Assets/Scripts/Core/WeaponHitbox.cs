@@ -27,6 +27,11 @@ public class WeaponHitbox : MonoBehaviour
         Debug.Log("Hitbox disabled.");
     }
 
+    public void SetDamage(float newDamage)
+    {
+        damage = newDamage;
+    }
+
     // This method is called when another collider stays within the trigger collider attached to this GameObject
     private void OnTriggerStay(Collider other)
     {
