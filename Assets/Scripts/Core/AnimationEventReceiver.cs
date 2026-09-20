@@ -71,4 +71,14 @@ public class AnimationEventReceiver : MonoBehaviour
     {
         weaponHitbox.DisableHitbox();
     }
+
+    public void FinishEnemyAttack()
+    {
+        EnemyController enemy = GetComponentInParent<EnemyController>();
+
+        if (enemy != null)
+        {
+            enemy.FinishAttack();
+        }
+    }
 }
