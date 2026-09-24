@@ -25,6 +25,8 @@ public class PlayerController : MonoBehaviour
     public MoveState MoveState;
     public SprintState SprintState;
     public CombatState CombatState;
+    public PlayerHitState HitState { get; private set; }
+    public PlayerBlockState BlockState { get; private set; }
 
     // State machine and public accessors
     public PlayerStateMachine StateMachine { get; private set; }
@@ -37,6 +39,7 @@ public class PlayerController : MonoBehaviour
 
     public bool InCombat { get; private set; }
     public bool IsChangingCombatState { get; private set; }
+    public bool IsBlocking => StateMachine.CurrentState == BlockState;
 
     [SerializeField] // Reference to the camera transform for movement direction
     private Transform cameraRoot;
@@ -77,6 +80,8 @@ public class PlayerController : MonoBehaviour
         MoveState = new MoveState(this);
         SprintState = new SprintState(this);
         CombatState = new CombatState(this);
+        HitState = new PlayerHitState(this);
+        BlockState = new PlayerBlockState(this);
     }
 
     // Initialize state machine with idle state
@@ -90,7 +95,8 @@ public class PlayerController : MonoBehaviour
     {
         ApplyGravity();
 
-        if (input.CombatPressed)
+        // Toggle combat mode if the combat button is pressed and the player is not in the hit state
+        if (input.CombatPressed && StateMachine.CurrentState != HitState)
         {
             ToggleCombat();
         }
@@ -139,6 +145,16 @@ public class PlayerController : MonoBehaviour
         }
 
         UpdateAnimator(speed);
+    }
+
+    // Stop the player's movement and reset animator parameters
+    public void StopMoving()
+    {
+        MoveDirection = Vector3.zero;
+
+        animator.SetFloat(MoveXHash, 0f);
+        animator.SetFloat(MoveYHash, 0f);
+        animator.SetFloat(MoveSpeedHash, 0f);
     }
 
     // Calculate movement direction based on camera orientation and input when not locked on
@@ -308,6 +324,11 @@ public class PlayerController : MonoBehaviour
         animator.SetTrigger("DrawSword");
     }
 
+    public void EnterHitState()
+    {
+        StateMachine.ChangeState(HitState);
+    }
+
     // Exit combat mode and update the animator
     public void ExitCombat()
     {
@@ -358,5 +379,10 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("InCombat", false);
 
         StateMachine.ChangeState(IdleState);
+    }
+
+    public void FinishHit()
+    {
+        HitState.FinishHit();
     }
 }

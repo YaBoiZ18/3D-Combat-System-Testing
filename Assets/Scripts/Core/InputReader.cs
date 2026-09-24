@@ -13,6 +13,8 @@ public class InputReader : MonoBehaviour
 
     public bool DodgePressed { get; private set; }
 
+    public bool BlockHeld { get; private set; }
+
     // Update is called once per frame
     void Update()
     {
@@ -41,5 +43,8 @@ public class InputReader : MonoBehaviour
 
         // Check if the dodge key is pressed
         DodgePressed = Input.GetKeyDown(KeyCode.Space);
+
+        // Check if the block key is held down
+        BlockHeld = Input.GetMouseButton(1);
     }
 }

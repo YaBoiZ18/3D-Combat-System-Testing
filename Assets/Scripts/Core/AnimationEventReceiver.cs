@@ -81,4 +81,12 @@ public class AnimationEventReceiver : MonoBehaviour
             enemy.FinishAttack();
         }
     }
+
+    public void FinishPlayerHit()
+    {
+        PlayerController player = GetComponentInParent<PlayerController>();
+
+        if (player != null)
+            player.FinishHit();
+    }
 }

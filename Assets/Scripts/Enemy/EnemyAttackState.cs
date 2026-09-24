@@ -13,6 +13,7 @@ public class EnemyAttackState : EnemyState
     {
     }
 
+    // The Enter method is called when the enemy enters the attack state.
     public override void Enter()
     {
         attackFinished = false;

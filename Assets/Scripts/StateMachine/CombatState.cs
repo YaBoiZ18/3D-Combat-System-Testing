@@ -11,6 +11,7 @@ public class CombatState : PlayerState
     {
         // Combat animation already handled
         // by FinishDrawingSword()
+        Debug.Log("ENTERED COMBAT STATE");
     }
 
     public override void Exit()
@@ -20,11 +21,19 @@ public class CombatState : PlayerState
 
     public override void Update()
     {
+        Debug.Log($"CombatState Update | InCombat: {player.InCombat}");
+
         if (!player.InCombat)
             return;
 
         if (player.DodgeController.IsDodging)
             return;
+
+        if(player.Input.BlockHeld)
+        {
+            player.StateMachine.ChangeState(player.BlockState);
+            return;
+        }
 
         // Check if the player is moving. If so, call the Move method with the player's walk speed.
         if (player.Input.MoveInput.magnitude > 0.1f)

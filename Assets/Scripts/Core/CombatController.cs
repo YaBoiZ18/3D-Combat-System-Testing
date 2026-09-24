@@ -33,8 +33,12 @@ public class CombatController : MonoBehaviour
         if (!player.InCombat)
             return;
 
+        if (player.StateMachine.CurrentState == player.HitState)
+            return;
+
         if (input.AttackPressed)
         {
+            Debug.Log("CombatController received AttackPressed.");
             LightAttack();
         }
     }
@@ -93,6 +97,25 @@ public class CombatController : MonoBehaviour
 
         animator.ResetTrigger(AttackHash);
         animator.SetInteger("ComboStep", 0);
+    }
+
+    // This method is called to cancel the current attack, for example when the player is hit or interrupted
+    public void CancelAttak()
+    {
+        if(!isAttacking)
+            return;
+
+        isAttacking = false;
+        canCombo = false;
+        comboStep = 0;
+
+        // Make absolutely sure the weapon cannot continue damaging anything.
+        weaponHitbox.DisableHitbox();
+
+        animator.ResetTrigger(AttackHash);
+        animator.SetInteger("ComboStep", 0);
+
+        Debug.Log("Player attack cancelled.");
     }
 
     // This method sets the damage of the weapon hitbox based on the current combo step
