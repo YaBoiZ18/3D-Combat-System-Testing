@@ -50,8 +50,28 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         {
             playerController.EnterHitState();
         }
+    }
 
-        playerController.EnterHitState();
+    // This method is called when the player successfully blocks an attack.
+    public void TakeBlockedHit(GameObject attacker)
+    {
+        if (playerController == null || !playerController.IsBlocking)
+            return;
+
+        EnemyController enemy = attacker.GetComponentInParent<EnemyController>();
+
+        // Stagger the enemy if it exists
+        if (enemy != null)
+        {
+            enemy.Stagger();
+        }
+
+        if (animator != null)
+        {
+            animator.SetTrigger(BlockImpactHash);
+        }
+
+        Debug.Log("Attack blocked! Enemy staggered.");
     }
 
     private void Die()

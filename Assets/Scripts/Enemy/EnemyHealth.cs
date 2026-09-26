@@ -7,6 +7,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
     [Header("References")]
     [SerializeField] private Animator animator;
+    [SerializeField] private EnemyController enemyController;
 
     private float currentHealth;
     private bool isDead;
@@ -33,6 +34,11 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         {
             Die();
             return;
+        }
+
+        if (enemyController != null)
+        {
+            enemyController.InterruptAttack();
         }
 
         animator.SetTrigger(HitHash);

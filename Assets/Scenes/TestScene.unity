@@ -1048,6 +1048,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
   maxHealth: 100
   animator: {fileID: 708761187}
+  enemyController: {fileID: 708761190}
 --- !u!114 &708761190
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1063,9 +1064,10 @@ MonoBehaviour:
   player: {fileID: 1403367313}
   animator: {fileID: 708761187}
   detectionRange: 10
-  attackRange: 2.5
+  attackRange: 2
   moveSpeed: 2.5
   rotationSpeed: 8
+  staggerDuration: 0.75
 --- !u!143 &708761191
 CharacterController:
   m_ObjectHideFlags: 0

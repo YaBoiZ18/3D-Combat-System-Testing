@@ -64,4 +64,10 @@ public class EnemyAttackState : EnemyState
     {
         attackFinished = true;
     }
+
+    public void InterruptAttack()
+    {
+        attackFinished = true;
+        attackStep = 0;
+    }
 }

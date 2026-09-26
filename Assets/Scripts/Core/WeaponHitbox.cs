@@ -45,25 +45,30 @@ public class WeaponHitbox : MonoBehaviour
 
         IDamageable damageable = other.GetComponentInParent<IDamageable>();
 
-        // If no IDamageable component is found, log a warning and return early.
         if (damageable == null)
-        {
-            // Log a warning message to the console indicating that the hit object does not have an IDamageable component.
-            Debug.LogWarning(
-                $"Hit {other.name}, but no IDamageable was found."
-            );
-
             return;
-        }
 
-        // Use the GameObject containing the damageable component
-        // as the unique target.
         GameObject target = ((MonoBehaviour)damageable).gameObject;
 
         if (hitObjects.Contains(target))
             return;
 
         hitObjects.Add(target);
+
+        // Check if this is the player
+        PlayerHealth playerHealth = other.GetComponentInParent<PlayerHealth>();
+
+        if (playerHealth != null && playerHealth.GetComponent<PlayerController>() != null)
+        {
+            PlayerController playerController =
+                playerHealth.GetComponent<PlayerController>();
+
+            if (playerController.IsBlocking)
+            {
+                playerHealth.TakeBlockedHit(gameObject);
+                return;
+            }
+        }
 
         Debug.Log($"Hit {target.name} for {damage} damage.");
 

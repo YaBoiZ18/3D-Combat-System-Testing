@@ -15,6 +15,11 @@ public class EnemyController : MonoBehaviour
     [SerializeField] private float moveSpeed = 2.5f;
     [SerializeField] private float rotationSpeed = 8f;
 
+    [Header("Stagger Settings")]
+    [SerializeField] private float staggerDuration = 1f;
+
+    public float StaggerDuration => staggerDuration;
+
     private CharacterController controller;
 
     public EnemyStateMachine StateMachine { get; private set; }
@@ -24,6 +29,7 @@ public class EnemyController : MonoBehaviour
     public EnemyChaseState ChaseState { get; private set; }
 
     public EnemyAttackState AttackState { get; private set; }
+    public EnemyStaggerState StaggerState { get; private set; }
 
     public float DetectionRange => detectionRange;
 
@@ -63,6 +69,7 @@ public class EnemyController : MonoBehaviour
         IdleState = new EnemyIdleState(this);
         ChaseState = new EnemyChaseState(this);
         AttackState = new EnemyAttackState(this);
+        StaggerState = new EnemyStaggerState(this);
 
         StateMachine.Initialize(IdleState);
     }
@@ -182,5 +189,18 @@ public class EnemyController : MonoBehaviour
     public void FinishAttack()
     {
         AttackState.FinishAttack();
+    }
+
+    public void Stagger()
+    {
+        StateMachine.ChangeState(StaggerState);
+    }
+
+    public void InterruptAttack()
+    {
+        if (StateMachine.CurrentState == AttackState)
+        {
+            StateMachine.ChangeState(ChaseState);
+        }
     }
 }
