@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     public CombatState CombatState;
     public PlayerHitState HitState { get; private set; }
     public PlayerBlockState BlockState { get; private set; }
+    public PlayerGuardBreakState GuardBreakState { get; private set; }
 
     // State machine and public accessors
     public PlayerStateMachine StateMachine { get; private set; }
@@ -82,6 +83,7 @@ public class PlayerController : MonoBehaviour
         CombatState = new CombatState(this);
         HitState = new PlayerHitState(this);
         BlockState = new PlayerBlockState(this);
+        GuardBreakState = new PlayerGuardBreakState(this);
     }
 
     // Initialize state machine with idle state
@@ -384,5 +386,15 @@ public class PlayerController : MonoBehaviour
     public void FinishHit()
     {
         HitState.FinishHit();
+    }
+
+    public void FinishGuardBreak()
+    {
+        GuardBreakState.FinishGuardBreak();
+    }
+
+    public void EnterGuardBreakState()
+    {
+        StateMachine.ChangeState(GuardBreakState);
     }
 }

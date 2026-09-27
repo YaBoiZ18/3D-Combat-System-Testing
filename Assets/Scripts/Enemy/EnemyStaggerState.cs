@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnemyStaggerState : EnemyState
 {
-    private float staggerDuration = 1f; // Duration of the stagger state
+    //private float staggerDuration = 1f; // Duration of the stagger state
     private float staggerTimer;
 
     private static readonly int HitHash = Animator.StringToHash("Hit");

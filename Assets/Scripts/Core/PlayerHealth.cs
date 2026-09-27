@@ -5,18 +5,27 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     [Header("Health Settings")]
     [SerializeField] private float maxHealth = 100f;
 
+    [Header("Guard Settings")]
+    [SerializeField] private float maxGuard = 100f;
+    [SerializeField] private float guardDamagePerBlock = 20f;
+    [SerializeField] private float guardRecoveryDelay = 2f;
+    [SerializeField] private float guardRecoveryRate = 25f;
+
     [Header("References")]
     [SerializeField] private PlayerController playerController;
     [SerializeField] private Animator animator;
 
     private float currentHealth;
     private bool isDead;
+    private float currentGuard;
+    private float guardRecoveryTimer;
 
     private static readonly int BlockImpactHash = Animator.StringToHash("BlockImpact");
 
     private void Awake()
     {
         currentHealth = maxHealth;
+        currentGuard = maxGuard;
     }
 
     public void TakeDamage(float damage)
@@ -66,12 +75,53 @@ public class PlayerHealth : MonoBehaviour, IDamageable
             enemy.Stagger();
         }
 
+        currentGuard -= guardDamagePerBlock;
+        guardRecoveryTimer = guardRecoveryDelay;
+
+        Debug.Log(
+            $"Attack blocked! Guard: {currentGuard}/{maxGuard}"
+        );
+
+        if (currentGuard <= 0f)
+        {
+            currentGuard = 0f;
+
+            playerController.EnterGuardBreakState();
+
+            return;
+        }
+
         if (animator != null)
         {
             animator.SetTrigger(BlockImpactHash);
         }
+    }
 
-        Debug.Log("Attack blocked! Enemy staggered.");
+    private void Update()
+    {
+        if (isDead)
+            return;
+
+        if(currentGuard >= maxGuard)
+            return;
+
+        if(playerController != null && playerController.IsBlocking)
+            return;
+
+        // Guard recovery logic
+        if (guardRecoveryTimer > 0f)
+        {
+            guardRecoveryTimer -= Time.deltaTime;
+            return;
+        }
+        // Recover guard over time
+        currentGuard += guardRecoveryRate * Time.deltaTime;
+        currentGuard = Mathf.Min(currentGuard, maxGuard);
+    }
+
+    public void ResetGuardRecovery()
+    {
+        guardRecoveryTimer = guardRecoveryDelay;
     }
 
     private void Die()

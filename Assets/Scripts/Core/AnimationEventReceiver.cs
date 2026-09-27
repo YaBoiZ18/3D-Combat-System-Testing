@@ -89,4 +89,12 @@ public class AnimationEventReceiver : MonoBehaviour
         if (player != null)
             player.FinishHit();
     }
+
+    public void FinishGuardBreak()
+    {
+        PlayerController player = GetComponentInParent<PlayerController>();
+
+        if (player != null)
+            player.FinishGuardBreak();
+    }
 }
