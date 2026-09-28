@@ -20,6 +20,12 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     private float currentGuard;
     private float guardRecoveryTimer;
 
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+
+    public float CurrentGuard => currentGuard;
+    public float MaxGuard => maxGuard;
+
     private static readonly int BlockImpactHash = Animator.StringToHash("BlockImpact");
 
     private void Awake()
