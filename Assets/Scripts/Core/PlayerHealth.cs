@@ -130,6 +130,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         guardRecoveryTimer = guardRecoveryDelay;
     }
 
+    public void StartGuardRecoveryDelay()
+    {
+        guardRecoveryTimer = guardRecoveryDelay;
+    }
+
     private void Die()
     {
         isDead = true;

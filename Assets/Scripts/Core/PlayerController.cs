@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public MoveState MoveState;
     public SprintState SprintState;
     public CombatState CombatState;
+    private PlayerHealth playerHealth;
     public PlayerHitState HitState { get; private set; }
     public PlayerBlockState BlockState { get; private set; }
     public PlayerGuardBreakState GuardBreakState { get; private set; }
@@ -71,6 +72,7 @@ public class PlayerController : MonoBehaviour
         controller = GetComponent<CharacterController>();
         input = GetComponent<InputReader>();
         StateMachine = new PlayerStateMachine();
+        playerHealth = GetComponent<PlayerHealth>();
 
         animator = GetComponentInChildren<Animator>();
 
@@ -395,6 +397,11 @@ public class PlayerController : MonoBehaviour
 
     public void EnterGuardBreakState()
     {
+        if (playerHealth != null)
+        {
+            playerHealth.StartGuardRecoveryDelay();
+        }
+
         StateMachine.ChangeState(GuardBreakState);
     }
 }
