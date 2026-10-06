@@ -2,18 +2,27 @@ using UnityEngine;
 
 public class EnemyStaggerState : EnemyState
 {
-    //private float staggerDuration = 1f; // Duration of the stagger state
     private float staggerTimer;
 
     private static readonly int HitHash = Animator.StringToHash("Hit");
+    // NEW: needed to clear a leftover attack trigger (see Enter)
+    private static readonly int AttackHash = Animator.StringToHash("Attack");
 
     public EnemyStaggerState(EnemyController enemy) : base(enemy)
     {
     }
 
     public override void Enter()
-    {   
+    {
         staggerTimer = enemy.StaggerDuration;
+
+        // NEW: if the enemy was staggered mid-swing, its weapon hitbox could stay enabled
+        // (the animation event that turns it off never plays). This makes sure it's off.
+        enemy.DisableWeaponHitbox();
+
+        // NEW: clear an attack trigger that was set but never used, so the enemy
+        // doesn't suddenly attack right after the stagger animation.
+        enemy.Animator.ResetTrigger(AttackHash);
 
         enemy.StopMoving();
 

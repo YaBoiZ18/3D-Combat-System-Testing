@@ -2,16 +2,14 @@ using UnityEngine;
 
 public class CombatState : PlayerState
 {
-    // Constructor for the CombatState class, which takes a PlayerController instance as a parameter and passes it to the base PlayerState class.
     public CombatState(PlayerController player) : base(player)
     {
     }
 
     public override void Enter()
     {
-        // Combat animation already handled
-        // by FinishDrawingSword()
-        Debug.Log("ENTERED COMBAT STATE");
+        // Combat animation already handled by FinishDrawingSword()
+        // CHANGED: removed the Debug.Log
     }
 
     public override void Exit()
@@ -21,7 +19,7 @@ public class CombatState : PlayerState
 
     public override void Update()
     {
-        Debug.Log($"CombatState Update | InCombat: {player.InCombat}");
+        // CHANGED: removed the Debug.Log that printed every frame
 
         if (!player.InCombat)
             return;
@@ -29,16 +27,28 @@ public class CombatState : PlayerState
         if (player.DodgeController.IsDodging)
             return;
 
-        if(player.Input.BlockHeld)
+        bool isAttacking = player.CombatController.IsAttacking;
+
+        // CHANGED: blocking waits until the attack is over. Before, holding block mid-swing
+        // switched states while the attack (and its hitbox) was still running.
+        // Since block is "held", you'll start blocking as soon as the attack ends.
+        if (player.Input.BlockHeld && !isAttacking)
         {
             player.StateMachine.ChangeState(player.BlockState);
             return;
         }
 
-        // Check if the player is moving. If so, call the Move method with the player's walk speed.
         if (player.Input.MoveInput.magnitude > 0.1f)
         {
-            player.Move(player.walkSpeed);
+            float speed = player.walkSpeed;
+
+            // NEW: slow down while attacking so the player doesn't slide around during a swing
+            if (isAttacking)
+            {
+                speed *= player.AttackMoveMultiplier;
+            }
+
+            player.Move(speed);
         }
     }
 }

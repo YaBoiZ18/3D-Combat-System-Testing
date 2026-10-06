@@ -1,94 +1,142 @@
 using UnityEngine;
 
+// Controls the player's light-attack combo flow, buffering, and hitbox damage.
 public class CombatController : MonoBehaviour
 {
     [Header("References")]
+    // Component references resolved in the inspector.
     [SerializeField] private Animator animator;
     [SerializeField] private InputReader input;
     [SerializeField] private WeaponHitbox weaponHitbox;
     [SerializeField] private PlayerController player;
 
     [Header("Light Attack Damage")]
+    // Damage values applied to the weapon hitbox per combo step.
     [SerializeField] private float lightAttack1Damage = 10f;
     [SerializeField] private float lightAttack2Damage = 12f;
     [SerializeField] private float lightAttack3Damage = 15f;
 
-    // Flag to indicate if the player is currently attacking
+    // NEW: how long (in seconds) an attack press is remembered if it can't be used yet
+    [Header("Feel")]
+    // Short window to buffer an attack press so inputs feel responsive.
+    [SerializeField] private float attackBufferTime = 0.3f;
+
+    // NEW: the combo has 3 hits. Before, nothing stopped comboStep from going past 3.
+    // Upper bound for combo steps to avoid invalid animator states.
+    private const int MaxComboSteps = 3;
+
     private bool isAttacking;
-    // Flag to indicate if the player can perform a combo attack
     private bool canCombo;
-    // Step in the combo sequence
     private int comboStep;
 
-    // Property to check if the player is currently attacking
+    // NEW: counts down after an attack press. While it's above 0, we keep trying to attack.
+    // Tracks how long the recent attack press should be remembered.
+    private float bufferTimer;
+
+    // Public accessor used by other systems to check if an attack is active.
     public bool IsAttacking => isAttacking;
 
-    // Animator hash for the attack trigger
     private static readonly int AttackHash = Animator.StringToHash("Attack");
+    // NEW: hash instead of the "ComboStep" string
+    private static readonly int ComboStepHash = Animator.StringToHash("ComboStep");
 
-    // Update is called once per frame
+    // Main update loop for input buffering and preventing actions while hit/dead.
     void Update()
     {
-        // Only allow attacks if the player is in combat
-        if (!player.InCombat)
+        // CHANGED: also clears the buffer, so a press from before you got hit
+        // doesn't suddenly fire afterwards.
+        if (!player.InCombat || player.IsDead || player.StateMachine.CurrentState == player.HitState)
+        {
+            bufferTimer = 0f;
             return;
+        }
 
-        if (player.StateMachine.CurrentState == player.HitState)
-            return;
-
+        // CHANGED: instead of attacking right now or losing the press, remember it briefly.
         if (input.AttackPressed)
         {
-            Debug.Log("CombatController received AttackPressed.");
-            LightAttack();
+            bufferTimer = attackBufferTime;
+        }
+
+        if (bufferTimer > 0f)
+        {
+            bufferTimer -= Time.deltaTime;
+
+            // If the attack went through, the press is used up.
+            if (TryLightAttack())
+            {
+                bufferTimer = 0f;
+            }
         }
     }
 
-    // This method is called when the player presses the attack button
+    // Kept so any other script that calls LightAttack() still compiles
+    // Legacy compatibility wrapper that attempts an attack.
     public void LightAttack()
     {
+        TryLightAttack();
+    }
+
+    // CHANGED: was LightAttack(). Now returns true if an attack actually started.
+    // Tries to start an attack and returns true on success (used by the buffer).
+    private bool TryLightAttack()
+    {
         if (player.DodgeController.IsDodging)
-            return;
+            return false;
+
+        // NEW: no attacking while blocking. Before, clicking while holding block started an
+        // attack animation while the player was still in BlockState (so hits were still "blocked"
+        // during the swing). A press made while blocking stays buffered for a moment, so it
+        // fires right after you let go of block.
+        if (player.IsBlocking)
+            return false;
 
         // First attack
         if (!isAttacking)
         {
-            isAttacking = true;
-            comboStep = 1;
-
-            animator.SetInteger("ComboStep", comboStep);
-            animator.SetTrigger(AttackHash);
-
-            SetCurrentAttackDamage();
-
-            return;
+            StartAttack(1);
+            return true;
         }
 
-
-        // Queue next attack
-        if (canCombo)
+        // Next hit in the combo (only inside the combo window, and only up to 3 hits)
+        if (canCombo && comboStep < MaxComboSteps)
         {
-            comboStep++;
-
-            animator.SetInteger("ComboStep", comboStep);
-            animator.SetTrigger(AttackHash);
-
-            SetCurrentAttackDamage();
-
             canCombo = false;
+            StartAttack(comboStep + 1);
+            return true;
         }
+
+        return false;
     }
 
+    // NEW: the first attack and the combo attacks did the same 4 things, so it's one method now
+    // Initializes attack state, updates animator parameters and sets hit damage.
+    private void StartAttack(int step)
+    {
+        isAttacking = true;
+        comboStep = step;
+
+        animator.SetInteger(ComboStepHash, comboStep);
+        animator.SetTrigger(AttackHash);
+
+        SetCurrentAttackDamage();
+    }
+
+    // Animation event: the combo window opens
+    // Animation hook that allows the next combo input.
     public void EnableCombo()
     {
         canCombo = true;
     }
 
+    // Animation event: the combo window closes
+    // Animation hook that disables combo chaining.
     public void DisableCombo()
     {
         canCombo = false;
     }
 
-    // This method is called by an animation event at the end of the attack animation
+    // Animation event at the end of the attack animation
+    // Resets attack-related flags and animator state.
     public void EndAttack()
     {
         isAttacking = false;
@@ -96,29 +144,30 @@ public class CombatController : MonoBehaviour
         comboStep = 0;
 
         animator.ResetTrigger(AttackHash);
-        animator.SetInteger("ComboStep", 0);
+        animator.SetInteger(ComboStepHash, 0);
     }
 
-    // This method is called to cancel the current attack, for example when the player is hit or interrupted
+    // Cancels the current attack, e.g. when the player is hit.
+    // (The name has a typo, "Attak". Rename it with your IDE's rename tool so every
+    // script that calls it updates automatically.)
+    // Force-cancels the attack, clears buffer and disables hitbox immediately.
     public void CancelAttak()
     {
-        if(!isAttacking)
+        if (!isAttacking)
             return;
 
         isAttacking = false;
         canCombo = false;
         comboStep = 0;
+        bufferTimer = 0f; // NEW
 
-        // Make absolutely sure the weapon cannot continue damaging anything.
         weaponHitbox.DisableHitbox();
 
         animator.ResetTrigger(AttackHash);
-        animator.SetInteger("ComboStep", 0);
-
-        Debug.Log("Player attack cancelled.");
+        animator.SetInteger(ComboStepHash, 0);
     }
 
-    // This method sets the damage of the weapon hitbox based on the current combo step
+    // Sets the weapon hitbox damage based on the active combo step.
     private void SetCurrentAttackDamage()
     {
         switch (comboStep)
@@ -134,6 +183,6 @@ public class CombatController : MonoBehaviour
                 break;
         }
 
-        Debug.Log($"Combo Step {comboStep} damage set.");
+        // CHANGED: removed the Debug.Log calls that printed on every attack
     }
 }

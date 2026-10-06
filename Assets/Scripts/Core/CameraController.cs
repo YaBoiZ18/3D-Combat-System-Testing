@@ -1,33 +1,42 @@
 using UnityEngine;
 
+//  Handles player camera behavior for both free-look and lock-on modes.
+// Smoothly interpolates yaw/pitch and applies them to camera root/target.
 public class CameraController : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private InputReader input;
     [SerializeField] private Transform cameraRoot;
     [SerializeField] private Transform cameraTarget;
+    [SerializeField] private LockOnController lockOn;
 
-    [Header("Settings")]
+    [Header("Free Look")]
     [SerializeField] private float sensitivity = 180f;
     [SerializeField] private float minPitch = -35f;
     [SerializeField] private float maxPitch = 70f;
+    [SerializeField] private float rotationSmoothTime = 0.08f;
 
+    // NEW: lock-on gets its own settings so it can feel different from free look
+    [Header("Lock-On")]
+    [SerializeField] private float lockOnSmoothTime = 0.15f; // slower = less snapping when you lock on
+    [SerializeField] private float lockOnMinPitch = -10f;    // limits how far up the camera tilts
+    [SerializeField] private float lockOnMaxPitch = 35f;     // limits how far down the camera tilts
+
+    // Raw target angles driven by input or lock-on
     private float yaw;
     private float pitch;
 
+    // Smoothed/applied angles
     private float currentYaw;
     private float currentPitch;
 
+    // Velocities used by SmoothDampAngle
     private float yawVelocity;
     private float pitchVelocity;
 
-    [SerializeField] private float rotationSmoothTime = 0.08f;
-
-    [SerializeField] private LockOnController lockOn;
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        // Initialize yaw/pitch from current transforms so smoothing starts from the visible camera state.
         yaw = cameraRoot.eulerAngles.y;
         pitch = cameraTarget.localEulerAngles.x;
 
@@ -37,30 +46,25 @@ public class CameraController : MonoBehaviour
             pitch -= 360f;
         }
 
-        // Initialize current yaw and pitch to match the initial rotation
         currentYaw = yaw;
         currentPitch = pitch;
 
-        // Lock the cursor to the center of the screen and hide it
+        // Lock and hide the cursor for gameplay by default.
         Cursor.lockState = CursorLockMode.Locked;
-
-        // Hide the cursor
         Cursor.visible = false;
     }
 
     private void Update()
     {
-        // Check if the Escape key is pressed to unlock the cursor
+        // Toggle cursor visibility/lock with Escape and re-lock on left-click.
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            // Unlock the cursor and make it visible
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
         if (Input.GetMouseButtonDown(0))
         {
-            // Lock the cursor and hide it when the left mouse button is clicked
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
@@ -68,95 +72,72 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (lockOn.IsLockedOn)
+        // CHANGED: null check so the camera still works if lockOn isn't assigned
+        if (lockOn != null && lockOn.IsLockedOn)
         {
-            // If locked on, rotate the camera to face the target
             RotateTowardsTarget();
         }
         else
         {
-            // If not locked on, allow free rotation based on input
             RotateFree();
         }
     }
 
     private void RotateFree()
     {
-        // Get the look input from the InputReader
+        // Read raw look input and convert to angle deltas.
         Vector2 look = input.LookInput;
 
-        // Calculate the yaw and pitch based on the look input and sensitivity
         yaw += look.x * sensitivity;
         pitch -= look.y * sensitivity;
-
-        // Clamp the pitch to prevent flipping
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
 
-        currentYaw = Mathf.SmoothDampAngle(
-            currentYaw,
-            yaw,
-            ref yawVelocity,
-            rotationSmoothTime
-        );
-        currentPitch = Mathf.SmoothDampAngle(
-            currentPitch,
-            pitch,
-            ref pitchVelocity,
-            rotationSmoothTime
-        );
-
-        // Apply the rotation to the camera root and target
-        cameraRoot.rotation = Quaternion.Euler(0f, currentYaw, 0f);
-        cameraTarget.localRotation = Quaternion.Euler(currentPitch, 0f, 0f);
+        // CHANGED: the smoothing code lives in one helper now (see SmoothRotate below)
+        SmoothRotate(yaw, pitch, rotationSmoothTime);
     }
 
-    // Rotate the camera to face the current lock-on target
     private void RotateTowardsTarget()
     {
         if (lockOn.CurrentTarget == null)
             return;
 
-        // Calculate the direction from the camera root to the target
-        Vector3 direction = lockOn.CurrentTarget.position - cameraRoot.position;
+        // CHANGED: aim from the camera pivot (cameraTarget) instead of cameraRoot.
+        // cameraRoot sits low (around the player's feet), which made the pitch look too far upward.
+        // Compute the direction vector from the camera pivot to the lock-on target.
+        Vector3 direction = lockOn.CurrentTarget.position - cameraTarget.position;
 
-        // Create a rotation that looks in the direction of the target
+        // NEW: LookRotation logs a warning if the direction is zero
+        if (direction.sqrMagnitude < 0.01f)
+            return;
+
         Quaternion targetRotation = Quaternion.LookRotation(direction);
 
-        // Extract the yaw and pitch from the target rotation
         float targetYaw = targetRotation.eulerAngles.y;
         float targetPitch = targetRotation.eulerAngles.x;
 
-        // Convert target pitch from 0-360 to -180 to 180
         if (targetPitch > 180f)
         {
             targetPitch -= 360f;
         }
 
-        // Clamp the target pitch to prevent flipping
-        targetPitch = Mathf.Clamp(targetPitch, minPitch, maxPitch);
+        // CHANGED: uses the tighter lock-on pitch limits
+        targetPitch = Mathf.Clamp(targetPitch, lockOnMinPitch, lockOnMaxPitch);
 
-        // Smoothly interpolate the current yaw and pitch towards the target values
-        currentYaw = Mathf.SmoothDampAngle(
-            currentYaw,
-            targetYaw,
-            ref yawVelocity,
-            rotationSmoothTime
-        );
+        SmoothRotate(targetYaw, targetPitch, lockOnSmoothTime);
 
-        // Smoothly interpolate the current pitch towards the target pitch
-        currentPitch = Mathf.SmoothDampAngle(
-            currentPitch,
-            targetPitch,
-            ref pitchVelocity,
-            rotationSmoothTime
-        );
-
-        // Apply the rotation to the camera root and target
-        cameraRoot.rotation = Quaternion.Euler(0f, currentYaw, 0f);
-        cameraTarget.localRotation = Quaternion.Euler(currentPitch, 0f, 0f);
-
-        // Update the yaw and pitch to match the current values for the next frame
+        // Keep free-look values in sync so there's no jump when you unlock
         yaw = currentYaw;
         pitch = currentPitch;
+    }
+
+    // NEW: replaces the duplicated SmoothDamp + apply-rotation code
+    private void SmoothRotate(float targetYaw, float targetPitch, float smoothTime)
+    {
+        // Smoothly approach the target angles and apply to transforms.
+        currentYaw = Mathf.SmoothDampAngle(currentYaw, targetYaw, ref yawVelocity, smoothTime);
+        currentPitch = Mathf.SmoothDampAngle(currentPitch, targetPitch, ref pitchVelocity, smoothTime);
+
+        cameraRoot.rotation = Quaternion.Euler(0f, currentYaw, 0f);
+        cameraTarget.localRotation = Quaternion.Euler(currentPitch, 0f, 0f);
     }
 }

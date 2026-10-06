@@ -26,6 +26,16 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     public float CurrentGuard => currentGuard;
     public float MaxGuard => maxGuard;
 
+    // NEW: lets other scripts (like WeaponHitbox) ask "is the player blocking?" without
+    // needing to know about PlayerController
+    public bool IsBlocking => playerController != null && playerController.IsBlocking;
+
+    // NEW: true once the player has died
+    public bool IsDead => isDead;
+
+    // NEW: raised once, when the player dies
+    public event System.Action Died;
+
     private static readonly int BlockImpactHash = Animator.StringToHash("BlockImpact");
 
     private void Awake()
@@ -36,24 +46,28 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
     public void TakeDamage(float damage)
     {
-
         if (isDead)
             return;
 
-        if (playerController != null && playerController.IsBlocking)
+        // NEW: dodge invincibility frames. The hit is simply ignored.
+        if (playerController != null &&
+            playerController.DodgeController != null &&
+            playerController.DodgeController.IsInvulnerable)
         {
-            Debug.Log("Attack blocked!");
+            return;
+        }
 
-            animator.SetTrigger(BlockImpactHash);
+        if (IsBlocking)
+        {
+            // CHANGED: null check, so a missing Animator doesn't crash here
+            if (animator != null)
+            {
+                animator.SetTrigger(BlockImpactHash);
+            }
             return;
         }
 
         currentHealth -= damage;
-
-        Debug.Log(
-            $"{gameObject.name} took {damage} damage. " +
-            $"Current health: {currentHealth}/{maxHealth}"
-        );
 
         if (currentHealth <= 0f)
         {
@@ -67,10 +81,10 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         }
     }
 
-    // This method is called when the player successfully blocks an attack.
+    // Called when the player successfully blocks an attack.
     public void TakeBlockedHit(GameObject attacker)
     {
-        if (playerController == null || !playerController.IsBlocking)
+        if (!IsBlocking)
             return;
 
         EnemyController enemy = attacker.GetComponentInParent<EnemyController>();
@@ -83,10 +97,6 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
         currentGuard -= guardDamagePerBlock;
         guardRecoveryTimer = guardRecoveryDelay;
-
-        Debug.Log(
-            $"Attack blocked! Guard: {currentGuard}/{maxGuard}"
-        );
 
         if (currentGuard <= 0f)
         {
@@ -108,19 +118,19 @@ public class PlayerHealth : MonoBehaviour, IDamageable
         if (isDead)
             return;
 
-        if(currentGuard >= maxGuard)
+        if (currentGuard >= maxGuard)
             return;
 
-        if(playerController != null && playerController.IsBlocking)
+        if (IsBlocking)
             return;
 
-        // Guard recovery logic
+        // Wait for the recovery delay before guard starts refilling
         if (guardRecoveryTimer > 0f)
         {
             guardRecoveryTimer -= Time.deltaTime;
             return;
         }
-        // Recover guard over time
+
         currentGuard += guardRecoveryRate * Time.deltaTime;
         currentGuard = Mathf.Min(currentGuard, maxGuard);
     }
@@ -138,7 +148,17 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     private void Die()
     {
         isDead = true;
-        Debug.Log($"{gameObject.name} has died.");
-        // Add death logic here (e.g., play death animation, disable player controls, etc.)
+
+        // NEW: a moment of slow motion makes the death hit harder
+        HitStop.Trigger(0.6f, 0.25f);
+
+        // NEW: switch the player into the death state (stops input, plays the death animation)
+        if (playerController != null)
+        {
+            playerController.EnterDeathState();
+        }
+
+        // NEW: lets other scripts react (the DeathScreen listens to this)
+        Died?.Invoke();
     }
 }
